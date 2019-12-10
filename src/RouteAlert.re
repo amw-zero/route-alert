@@ -12,10 +12,15 @@ type state = {
   startPoint: option(string),
   destination: option(string),
   minutes: option(int),
-  routeFetchAbility
+  routeFetchAbility,
 };
 
-let initialState = {startPoint: None, destination: None, minutes: None, routeFetchAbility: CannotFetch };
+let initialState = {
+  startPoint: None,
+  destination: None,
+  minutes: None,
+  routeFetchAbility: CannotFetch,
+};
 
 let reducer = (state, action) => {
   switch (action) {
@@ -48,13 +53,17 @@ let setMinutes = e => {
 };
 
 let directionsApi = (startPoint, destination) => {
-  "https://maps.googleapis.com/maps/api/directions/json?origin=" ++ startPoint ++ "&destination=" ++ destination ++ "&key=AIzaSyC6AfIwElNGcfmzz-XyBHUb3ftWb2SL2vU";
+  "https://maps.googleapis.com/maps/api/directions/json?origin="
+  ++ startPoint
+  ++ "&destination="
+  ++ destination
+  ++ "&key=AIzaSyC6AfIwElNGcfmzz-XyBHUb3ftWb2SL2vU";
 };
 
 let fetchDirections = (state, _) => {
-  switch((state.startPoint, state.destination)) {
-    | (Some(sp), Some(d)) => Some(directionsApi(sp, d))
-    | _ => None
+  switch (state.startPoint, state.destination) {
+  | (Some(sp), Some(d)) => Some(directionsApi(sp, d))
+  | _ => None
   };
 };
 
@@ -83,6 +92,6 @@ let make = () => {
       {React.string("Destination: " ++ displayString(state.destination))}
     </p>
     <p> {React.string("Minutes: " ++ displayInt(state.minutes))} </p>
-//    <button onClick={fetchDirections(state)}>{React.string("Set alert")}</button>
+    //    <button onClick={fetchDirections(state)}>{React.string("Set alert")}</button>
   </>;
 };
