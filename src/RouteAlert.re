@@ -28,12 +28,24 @@ let start_point_of_input = (e) => {
   SetStartPoint(s);
 };
 
+let destination_of_input = (e) => {
+  let s = switch(e->ReactEvent.Form.target##value) {
+  | "" => "nada"
+  | s => s  
+  };
+
+  SetDestination(s);
+};
+
 [@react.component]
 let make = () => {
   let (state, dispatch) = React.useReducer(reducer, { startPoint: None, destination: None });
 
   <>
     <input name="start-point" type_="text" onChange={(e) => dispatch(start_point_of_input(e))}/>
-    <p> { React.string(startString(state.startPoint)) } </p>
+    <input name="destination" type_="text" onChange={(e) => dispatch(destination_of_input(e))}/>        
+
+    <p> { React.string("Start: " ++ startString(state.startPoint)) } </p>
+    <p> { React.string("Destination: " ++ startString(state.destination)) } </p>    
   </>;
 };
