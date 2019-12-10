@@ -1,19 +1,14 @@
 type action = SetStartPoint(string) | SetDestination(string);
 
-let setStartPoint = (c) => {
-  let x = 5;
-};
-
-
 type state = {
   startPoint: option(string),
   destination: option(string)
 };
 
 let reducer = (state, action) => {
-  {
-    startPoint: Some("test"),
-    destination: Some("test")
+  switch(action) {
+  | SetStartPoint(point) => { ...state, startPoint: Some(point) }
+  | SetDestination(dest) => { ...state, destination: Some(dest) }
   };
 };
 
@@ -24,12 +19,21 @@ let startString = (startPoint) => {
   };
 };
 
+let start_point_of_input = (e) => {
+  let s = switch(e->ReactEvent.Form.target##value) {
+  | "" => "nada"
+  | s => s  
+  };
+
+  SetStartPoint(s);
+};
+
 [@react.component]
 let make = () => {
   let (state, dispatch) = React.useReducer(reducer, { startPoint: None, destination: None });
 
   <>
-    <input name="start-point" type_="text" onChange={(_) => dispatch(SetStartPoint("new"))}/>
+    <input name="start-point" type_="text" onChange={(e) => dispatch(start_point_of_input(e))}/>
     <p> { React.string(startString(state.startPoint)) } </p>
   </>;
 };
