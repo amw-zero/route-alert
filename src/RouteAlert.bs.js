@@ -37,11 +37,9 @@ function reducer(state, action) {
 }
 
 function displayString(ostr) {
-  if (ostr !== undefined) {
-    return ostr;
-  } else {
-    return "nothing";
-  }
+  return Belt_Option.mapWithDefault(ostr, "nada", (function (s) {
+                return s;
+              }));
 }
 
 function displayInt(i) {
@@ -88,7 +86,11 @@ function RouteAlert(Props) {
                   onChange: (function (e) {
                       return Curry._1(dispatch, minutes(e));
                     })
-                }), React.createElement("p", undefined, "Start: " + displayString(state.startPoint)), React.createElement("p", undefined, "Destination: " + displayString(state.destination)), React.createElement("p", undefined, "Minutes: " + displayInt(state.minutes)));
+                }), React.createElement("p", undefined, "Start: " + Belt_Option.mapWithDefault(state.startPoint, "nada", (function (s) {
+                        return s;
+                      }))), React.createElement("p", undefined, "Destination: " + Belt_Option.mapWithDefault(state.destination, "nada", (function (s) {
+                        return s;
+                      }))), React.createElement("p", undefined, "Minutes: " + displayInt(state.minutes)));
 }
 
 var make = RouteAlert;
