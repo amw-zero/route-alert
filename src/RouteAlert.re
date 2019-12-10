@@ -43,7 +43,7 @@ let make = () => {
 
   <>
     <input name="start-point" type_="text" onChange={(e) => dispatch(start_point_of_input(e))}/>
-    <input name="destination" type_="text" onChange={(e) => dispatch(destination_of_input(e))}/>        
+    <input name="destination" type_="text" onChange={(e) => dispatch(destination_of_input(e))}/>
 
     <p> { React.string("Start: " ++ startString(state.startPoint)) } </p>
     <p> { React.string("Destination: " ++ startString(state.destination)) } </p>    
