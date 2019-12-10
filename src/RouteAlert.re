@@ -1,8 +1,15 @@
+type route = {
+  startPoint: string,
+  destination: string,
+};
+
 [@bs.deriving accessors]
 type action =
   | SetStartPoint(string)
   | SetDestination(string)
-  | SetMinutes(int);
+  | SetMinutes(int)
+  | FetchRoute(route)
+  | Noop;
 
 type routeFetchAbility =
   | CanFetch
@@ -22,12 +29,26 @@ let initialState = {
   routeFetchAbility: CannotFetch,
 };
 
+let applyFetchAbility = state => {
+  let routeFetchAbility =
+    switch (state.startPoint, state.destination, state.minutes) {
+    | (Some(_), Some(_), Some(_)) => CanFetch
+    | _ => CannotFetch
+    };
+
+  {...state, routeFetchAbility};
+};
+
 let reducer = (state, action) => {
-  switch (action) {
-  | SetStartPoint(point) => {...state, startPoint: Some(point)}
-  | SetDestination(dest) => {...state, destination: Some(dest)}
-  | SetMinutes(minutes) => {...state, minutes: Some(minutes)}
-  };
+  applyFetchAbility(
+    switch (action) {
+    | SetStartPoint(point) => {...state, startPoint: Some(point)}
+    | SetDestination(dest) => {...state, destination: Some(dest)}
+    | SetMinutes(minutes) => {...state, minutes: Some(minutes)}
+    | FetchRoute(_) => state
+    | Noop => state
+    },
+  );
 };
 
 let displayString = ostr => {
@@ -38,14 +59,14 @@ let displayInt = i => {
   Belt.Option.mapWithDefault(i, "nada", n => string_of_int(n));
 };
 
-let dispatchEvent = (action, e) => {
+let dispatchEvent = (actionCtor, e) => {
   let s =
     switch (e->ReactEvent.Form.target##value) {
     | "" => "nada"
     | s => s
     };
 
-  action(s);
+  actionCtor(s);
 };
 
 let setMinutes = e => {
@@ -60,12 +81,18 @@ let directionsApi = (startPoint, destination) => {
   ++ "&key=AIzaSyC6AfIwElNGcfmzz-XyBHUb3ftWb2SL2vU";
 };
 
-let fetchDirections = (state, _) => {
+let dispatchFetchDirections = state => {
   switch (state.startPoint, state.destination) {
-  | (Some(sp), Some(d)) => Some(directionsApi(sp, d))
-  | _ => None
+  | (Some(sp), Some(d)) => FetchRoute({startPoint: sp, destination: d})
+  | _ => Noop
   };
 };
+
+let canFetch = state =>
+  switch (state.routeFetchAbility) {
+  | CanFetch => true
+  | CannotFetch => false
+  };
 
 [@react.component]
 let make = () => {
@@ -92,6 +119,10 @@ let make = () => {
       {React.string("Destination: " ++ displayString(state.destination))}
     </p>
     <p> {React.string("Minutes: " ++ displayInt(state.minutes))} </p>
-    //    <button onClick={fetchDirections(state)}>{React.string("Set alert")}</button>
+    <button
+      disabled={!canFetch(state)}
+      onClick={_ => dispatch(dispatchFetchDirections(state))}>
+      {React.string("Set alert")}
+    </button>
   </>;
 };
