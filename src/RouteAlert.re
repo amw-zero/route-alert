@@ -1,3 +1,28 @@
+open Belt.Option;
+
+module Reffect = {
+  let useReducer =
+      (
+        initialState: 's,
+        reducer: ('s, 'a) => ('s, option('e)),
+        interpreter: ('e, 'a => unit) => unit,
+      )
+      : ('s, 'a => unit) => {
+    let (state, setState) = React.useState(() => initialState);
+
+    let rec dispatch = (action: 'a): unit => {
+      let (nextState, nextEffect) = reducer(state, action);
+      setState(_ => nextState);
+      switch (nextEffect) {
+      | Some(effect) => interpreter(effect, dispatch)
+      | None => ()
+      };
+    };
+
+    (state, dispatch);
+  };
+};
+
 type route = {
   startPoint: string,
   destination: string,
@@ -29,34 +54,23 @@ let initialState = {
   routeFetchAbility: CannotFetch,
 };
 
-let applyFetchAbility = state => {
+let applyFetchAbility = stateEffect => {
+  let state = fst(stateEffect);
   let routeFetchAbility =
     switch (state.startPoint, state.destination, state.minutes) {
     | (Some(_), Some(_), Some(_)) => CanFetch
     | _ => CannotFetch
     };
 
-  {...state, routeFetchAbility};
-};
-
-let reducer = (state, action) => {
-  applyFetchAbility(
-    switch (action) {
-    | SetStartPoint(point) => {...state, startPoint: Some(point)}
-    | SetDestination(dest) => {...state, destination: Some(dest)}
-    | SetMinutes(minutes) => {...state, minutes: Some(minutes)}
-    | FetchRoute(_) => state
-    | Noop => state
-    },
-  );
+  ({...state, routeFetchAbility}, snd(stateEffect));
 };
 
 let displayString = ostr => {
-  Belt.Option.mapWithDefault(ostr, "nada", s => s);
+  mapWithDefault(ostr, "nada", s => s);
 };
 
 let displayInt = i => {
-  Belt.Option.mapWithDefault(i, "nada", n => string_of_int(n));
+  mapWithDefault(i, "nada", n => string_of_int(n));
 };
 
 let dispatchEvent = (actionCtor, e) => {
@@ -94,34 +108,59 @@ let canFetch = state =>
   | CannotFetch => false
   };
 
+// Reffect model
+
+type effect =
+  | CalculateRoute;
+
+let effectReducer = (state, action) => {
+  let res =
+    switch (action) {
+    | SetStartPoint(point) => ({...state, startPoint: Some(point)}, None)
+    | SetDestination(dest) => ({...state, destination: Some(dest)}, None)
+    | SetMinutes(minutes) => ({...state, minutes: Some(minutes)}, None)
+    | FetchRoute(_) => (state, None)
+    | Noop => (state, None)
+    };
+
+  applyFetchAbility(res);
+};
+
+let interpreter = (effect, dispatch) => {
+  switch (effect) {
+  | CalculateRoute => ()
+  };
+};
+
 [@react.component]
 let make = () => {
-  let (state, dispatch) = React.useReducer(reducer, initialState);
+  let (stateE, dispatchE) =
+    Reffect.useReducer(initialState, effectReducer, interpreter);
 
   <>
     <input
       name="start-point"
       type_="text"
-      onChange={e => dispatch(dispatchEvent(setStartPoint, e))}
+      onChange={e => dispatchE(dispatchEvent(setStartPoint, e))}
     />
     <input
       name="destination"
       type_="text"
-      onChange={e => dispatch(dispatchEvent(setDestination, e))}
+      onChange={e => dispatchE(dispatchEvent(setDestination, e))}
     />
     <input
       name="destination"
       type_="number"
-      onChange={e => dispatch(setMinutes(e))}
+      onChange={e => dispatchE(setMinutes(e))}
     />
-    <p> {React.string("Start: " ++ displayString(state.startPoint))} </p>
+    <p> {React.string("Start: " ++ displayString(stateE.startPoint))} </p>
     <p>
-      {React.string("Destination: " ++ displayString(state.destination))}
+      {React.string("Destination: " ++ displayString(stateE.destination))}
     </p>
-    <p> {React.string("Minutes: " ++ displayInt(state.minutes))} </p>
+    <p> {React.string("Minutes: " ++ displayInt(stateE.minutes))} </p>
     <button
-      disabled={!canFetch(state)}
-      onClick={_ => dispatch(dispatchFetchDirections(state))}>
+      disabled={!canFetch(stateE)}
+      onClick={_ => dispatchE(dispatchFetchDirections(stateE))}>
       {React.string("Set alert")}
     </button>
   </>;
