@@ -48,25 +48,29 @@ function fetchRoute(param_0) {
   return /* FetchRoute */Block.__(3, [param_0]);
 }
 
+function fetchedRoute(param_0) {
+  return /* FetchedRoute */Block.__(4, [param_0]);
+}
+
 var initialState = {
   startPoint: undefined,
   destination: undefined,
   minutes: undefined,
-  routeFetchAbility: /* CannotFetch */1
+  routeFetchAbility: /* CannotFetch */1,
+  dataLoadingState: /* NotLoading */1,
+  routeDuration: undefined
 };
 
 function applyFetchAbility(stateEffect) {
   var state = stateEffect[0];
-  var match = state.startPoint;
-  var match$1 = state.destination;
-  var match$2 = state.minutes;
-  var routeFetchAbility = match !== undefined && match$1 !== undefined && match$2 !== undefined ? /* CanFetch */0 : /* CannotFetch */1;
   return /* tuple */[
           {
             startPoint: state.startPoint,
             destination: state.destination,
             minutes: state.minutes,
-            routeFetchAbility: routeFetchAbility
+            routeFetchAbility: /* CanFetch */0,
+            dataLoadingState: state.dataLoadingState,
+            routeDuration: state.routeDuration
           },
           stateEffect[1]
         ];
@@ -135,7 +139,9 @@ function effectReducer(state, action) {
               startPoint: action[0],
               destination: state.destination,
               minutes: state.minutes,
-              routeFetchAbility: state.routeFetchAbility
+              routeFetchAbility: state.routeFetchAbility,
+              dataLoadingState: state.dataLoadingState,
+              routeDuration: state.routeDuration
             },
             undefined
           ];
@@ -146,7 +152,9 @@ function effectReducer(state, action) {
               startPoint: state.startPoint,
               destination: action[0],
               minutes: state.minutes,
-              routeFetchAbility: state.routeFetchAbility
+              routeFetchAbility: state.routeFetchAbility,
+              dataLoadingState: state.dataLoadingState,
+              routeDuration: state.routeDuration
             },
             undefined
           ];
@@ -157,14 +165,42 @@ function effectReducer(state, action) {
               startPoint: state.startPoint,
               destination: state.destination,
               minutes: action[0],
-              routeFetchAbility: state.routeFetchAbility
+              routeFetchAbility: state.routeFetchAbility,
+              dataLoadingState: state.dataLoadingState,
+              routeDuration: state.routeDuration
             },
             undefined
           ];
           break;
       case /* FetchRoute */3 :
           tmp = /* tuple */[
-            state,
+            {
+              startPoint: state.startPoint,
+              destination: state.destination,
+              minutes: state.minutes,
+              routeFetchAbility: state.routeFetchAbility,
+              dataLoadingState: /* Loading */0,
+              routeDuration: state.routeDuration
+            },
+            /* CalculateRoute */[
+              Belt_Option.getExn(state.startPoint),
+              Belt_Option.getExn(state.destination),
+              fetchedRoute
+            ]
+          ];
+          break;
+      case /* FetchedRoute */4 :
+          var i = action[0];
+          console.log(String(i));
+          tmp = /* tuple */[
+            {
+              startPoint: state.startPoint,
+              destination: state.destination,
+              minutes: state.minutes,
+              routeFetchAbility: state.routeFetchAbility,
+              dataLoadingState: state.dataLoadingState,
+              routeDuration: i
+            },
             undefined
           ];
           break;
@@ -175,41 +211,56 @@ function effectReducer(state, action) {
 }
 
 function interpreter(effect, dispatch) {
+  var actionCtor = effect[2];
+  var api = directionsApi(effect[0], effect[1]);
+  console.log(api);
+  fetch(api).then((function (prim) {
+            return prim.json();
+          })).then((function (json) {
+          return Promise.resolve((console.log(json), /* () */0));
+        }));
+  setTimeout((function (param) {
+          console.log("test");
+          Curry._1(dispatch, Curry._1(actionCtor, 5));
+          return /* () */0;
+        }), 1000);
   return /* () */0;
 }
 
 function RouteAlert(Props) {
   var match = useReducer(initialState, effectReducer, interpreter);
-  var dispatchE = match[1];
-  var stateE = match[0];
+  var dispatch = match[1];
+  var state = match[0];
   return React.createElement(React.Fragment, undefined, React.createElement("input", {
                   name: "start-point",
                   type: "text",
                   onChange: (function (e) {
-                      return Curry._1(dispatchE, dispatchEvent(setStartPoint, e));
+                      return Curry._1(dispatch, dispatchEvent(setStartPoint, e));
                     })
                 }), React.createElement("input", {
                   name: "destination",
                   type: "text",
                   onChange: (function (e) {
-                      return Curry._1(dispatchE, dispatchEvent(setDestination, e));
+                      return Curry._1(dispatch, dispatchEvent(setDestination, e));
                     })
                 }), React.createElement("input", {
                   name: "destination",
                   type: "number",
                   onChange: (function (e) {
-                      return Curry._1(dispatchE, setMinutes(e));
+                      return Curry._1(dispatch, setMinutes(e));
                     })
-                }), React.createElement("p", undefined, "Start: " + Belt_Option.mapWithDefault(stateE.startPoint, "nada", (function (s) {
+                }), React.createElement("p", undefined, "Start: " + Belt_Option.mapWithDefault(state.startPoint, "nada", (function (s) {
                         return s;
-                      }))), React.createElement("p", undefined, "Destination: " + Belt_Option.mapWithDefault(stateE.destination, "nada", (function (s) {
+                      }))), React.createElement("p", undefined, "Destination: " + Belt_Option.mapWithDefault(state.destination, "nada", (function (s) {
                         return s;
-                      }))), React.createElement("p", undefined, "Minutes: " + displayInt(stateE.minutes)), React.createElement("button", {
-                  disabled: !canFetch(stateE),
+                      }))), React.createElement("p", undefined, "Minutes: " + displayInt(state.minutes)), React.createElement("button", {
+                  disabled: !canFetch(state),
                   onClick: (function (param) {
-                      return Curry._1(dispatchE, dispatchFetchDirections(stateE));
+                      return Curry._1(dispatch, dispatchFetchDirections(state));
                     })
-                }, "Set alert"));
+                }, "Set alert"), React.createElement("p", undefined, "Route duration: " + Belt_Option.mapWithDefault(state.routeDuration, "None", (function (prim) {
+                        return String(prim);
+                      }))));
 }
 
 var noop = /* Noop */0;
@@ -220,6 +271,7 @@ exports.Reffect = Reffect;
 exports.setStartPoint = setStartPoint;
 exports.setDestination = setDestination;
 exports.fetchRoute = fetchRoute;
+exports.fetchedRoute = fetchedRoute;
 exports.noop = noop;
 exports.initialState = initialState;
 exports.applyFetchAbility = applyFetchAbility;
