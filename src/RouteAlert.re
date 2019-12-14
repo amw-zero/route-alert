@@ -69,7 +69,6 @@ let applyFetchAbility = stateEffect => {
   let state = fst(stateEffect);
   let routeFetchAbility =
     switch (state.startPoint, state.destination, state.minutes) {
-    | _ => CanFetch
     | (Some(_), Some(_), Some(_)) => CanFetch
     | _ => CannotFetch
     };
@@ -136,7 +135,7 @@ type destination = string;
 type effect('a) =
   | CalculateRoute(startPoint, destination, int => 'a);
 
-let effectReducer = (state, action) => {
+let reducer = (state, action) => {
   let res =
     switch (action) {
     | SetStartPoint(point) => ({...state, startPoint: Some(point)}, None)
@@ -183,10 +182,33 @@ let interpreter = (effect, dispatch) => {
   };
 };
 
+let testPreventingAlertCreationWhenAllDataIsNotPresent = () => {
+  let actions = [SetStartPoint("origin"), SetDestination("dest")];
+  let finalState = Belt.List.reduce(actions, initialState, (s, a) => reducer(s, a) |> fst);
+
+  Js.log(switch(finalState.routeFetchAbility) {
+    | CanFetch => "fail"
+    | CannotFetch => "pass"
+  });
+};
+
+let testPreventingAlertCreationWhenAllDataIsPresent = () => {
+  let actions = [SetStartPoint("origin"), SetDestination("dest"), SetMinutes(5)];
+  let finalState = Belt.List.reduce(actions, initialState, (s, a) => reducer(s, a) |> fst);
+
+  Js.log(switch(finalState.routeFetchAbility) {
+    | CanFetch => "pass"
+    | CannotFetch => "fail"
+  });
+};
+
+testPreventingAlertCreationWhenAllDataIsNotPresent();
+testPreventingAlertCreationWhenAllDataIsPresent();
+
 [@react.component]
 let make = () => {
   let (state, dispatch) =
-    Reffect.useReducer(initialState, effectReducer, interpreter);
+    Reffect.useReducer(initialState, reducer, interpreter);
 
   <>
     <input

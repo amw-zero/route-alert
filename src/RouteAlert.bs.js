@@ -3,6 +3,7 @@
 var Block = require("bs-platform/lib/js/block.js");
 var Curry = require("bs-platform/lib/js/curry.js");
 var React = require("react");
+var Belt_List = require("bs-platform/lib/js/belt_List.js");
 var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
 var Caml_format = require("bs-platform/lib/js/caml_format.js");
 var Caml_option = require("bs-platform/lib/js/caml_option.js");
@@ -63,12 +64,16 @@ var initialState = {
 
 function applyFetchAbility(stateEffect) {
   var state = stateEffect[0];
+  var match = state.startPoint;
+  var match$1 = state.destination;
+  var match$2 = state.minutes;
+  var routeFetchAbility = match !== undefined && match$1 !== undefined && match$2 !== undefined ? /* CanFetch */0 : /* CannotFetch */1;
   return /* tuple */[
           {
             startPoint: state.startPoint,
             destination: state.destination,
             minutes: state.minutes,
-            routeFetchAbility: /* CanFetch */0,
+            routeFetchAbility: routeFetchAbility,
             dataLoadingState: state.dataLoadingState,
             routeDuration: state.routeDuration
           },
@@ -124,7 +129,7 @@ function canFetch(state) {
   }
 }
 
-function effectReducer(state, action) {
+function reducer(state, action) {
   var tmp;
   if (typeof action === "number") {
     tmp = /* tuple */[
@@ -227,8 +232,45 @@ function interpreter(effect, dispatch) {
   return /* () */0;
 }
 
+function testPreventingAlertCreationWhenAllDataIsNotPresent(param) {
+  var finalState = Belt_List.reduce(/* :: */[
+        /* SetStartPoint */Block.__(0, ["origin"]),
+        /* :: */[
+          /* SetDestination */Block.__(1, ["dest"]),
+          /* [] */0
+        ]
+      ], initialState, (function (s, a) {
+          return reducer(s, a)[0];
+        }));
+  var match = finalState.routeFetchAbility;
+  console.log(match ? "pass" : "fail");
+  return /* () */0;
+}
+
+function testPreventingAlertCreationWhenAllDataIsPresent(param) {
+  var finalState = Belt_List.reduce(/* :: */[
+        /* SetStartPoint */Block.__(0, ["origin"]),
+        /* :: */[
+          /* SetDestination */Block.__(1, ["dest"]),
+          /* :: */[
+            /* SetMinutes */Block.__(2, [5]),
+            /* [] */0
+          ]
+        ]
+      ], initialState, (function (s, a) {
+          return reducer(s, a)[0];
+        }));
+  var match = finalState.routeFetchAbility;
+  console.log(match ? "fail" : "pass");
+  return /* () */0;
+}
+
+testPreventingAlertCreationWhenAllDataIsNotPresent(/* () */0);
+
+testPreventingAlertCreationWhenAllDataIsPresent(/* () */0);
+
 function RouteAlert(Props) {
-  var match = useReducer(initialState, effectReducer, interpreter);
+  var match = useReducer(initialState, reducer, interpreter);
   var dispatch = match[1];
   var state = match[0];
   return React.createElement(React.Fragment, undefined, React.createElement("input", {
@@ -282,7 +324,9 @@ exports.setMinutes = setMinutes;
 exports.directionsApi = directionsApi;
 exports.dispatchFetchDirections = dispatchFetchDirections;
 exports.canFetch = canFetch;
-exports.effectReducer = effectReducer;
+exports.reducer = reducer;
 exports.interpreter = interpreter;
+exports.testPreventingAlertCreationWhenAllDataIsNotPresent = testPreventingAlertCreationWhenAllDataIsNotPresent;
+exports.testPreventingAlertCreationWhenAllDataIsPresent = testPreventingAlertCreationWhenAllDataIsPresent;
 exports.make = make;
-/* react Not a pure module */
+/*  Not a pure module */
