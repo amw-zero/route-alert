@@ -3,7 +3,7 @@
 var Block = require("bs-platform/lib/js/block.js");
 var Curry = require("bs-platform/lib/js/curry.js");
 var Belt_List = require("bs-platform/lib/js/belt_List.js");
-var RouteAlert$ReasonReactExamples = require("./RouteAlert.bs.js");
+var RouteAlertBehavior = require("route-alert-behavior/src/RouteAlertBehavior.bs.js");
 
 function testInterpreter(effect, dispatch) {
   return Curry._1(dispatch, Curry._1(effect[2], 90));
@@ -11,10 +11,10 @@ function testInterpreter(effect, dispatch) {
 
 function reduceActions(actions) {
   var state = {
-    contents: RouteAlert$ReasonReactExamples.initialState
+    contents: RouteAlertBehavior.initialState
   };
-  return Belt_List.reduce(actions, RouteAlert$ReasonReactExamples.initialState, (function (param, action) {
-                RouteAlert$ReasonReactExamples.Reffect.makeDispatch(state.contents, RouteAlert$ReasonReactExamples.reducer, testInterpreter, (function (s) {
+  return Belt_List.reduce(actions, RouteAlertBehavior.initialState, (function (param, action) {
+                RouteAlertBehavior.Reffect.makeDispatch(state.contents, RouteAlertBehavior.reducer, testInterpreter, (function (s) {
                           state.contents = s;
                           return /* () */0;
                         }))(action);
@@ -75,4 +75,4 @@ exports.reduceActions = reduceActions;
 exports.testPreventingAlertCreationWhenAllDataIsNotPresent = testPreventingAlertCreationWhenAllDataIsNotPresent;
 exports.testPreventingAlertCreationWhenAllDataIsPresent = testPreventingAlertCreationWhenAllDataIsPresent;
 exports.testCalculatingRouteDuration = testCalculatingRouteDuration;
-/* RouteAlert-ReasonReactExamples Not a pure module */
+/* No side effect */

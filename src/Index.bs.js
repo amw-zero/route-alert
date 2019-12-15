@@ -20,5 +20,7 @@ Test$ReasonReactExamples.testPreventingAlertCreationWhenAllDataIsPresent(/* () *
 
 Test$ReasonReactExamples.testCalculatingRouteDuration(/* () */0);
 
+Test$ReasonReactExamples.testCalculatingRouteDuration(/* () */0);
+
 exports.style = style;
 /* style Not a pure module */
