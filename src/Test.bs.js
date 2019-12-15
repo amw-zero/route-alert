@@ -1,17 +1,30 @@
 'use strict';
 
 var Block = require("bs-platform/lib/js/block.js");
+var Curry = require("bs-platform/lib/js/curry.js");
 var Belt_List = require("bs-platform/lib/js/belt_List.js");
 var RouteAlert$ReasonReactExamples = require("./RouteAlert.bs.js");
 
-function testActions(actions) {
-  return Belt_List.reduce(actions, RouteAlert$ReasonReactExamples.initialState, (function (s, a) {
-                return RouteAlert$ReasonReactExamples.reducer(s, a)[0];
+function testInterpreter(effect, dispatch) {
+  return Curry._1(dispatch, Curry._1(effect[2], 5));
+}
+
+function reduceActions(actions) {
+  var state = {
+    contents: RouteAlert$ReasonReactExamples.initialState
+  };
+  return Belt_List.reduce(actions, RouteAlert$ReasonReactExamples.initialState, (function (param, action) {
+                var dispatch = RouteAlert$ReasonReactExamples.Reffect.makeDispatch(state.contents, RouteAlert$ReasonReactExamples.reducer, testInterpreter, (function (s) {
+                        state.contents = s;
+                        return /* () */0;
+                      }));
+                Curry._1(dispatch, action);
+                return state.contents;
               }));
 }
 
 function testPreventingAlertCreationWhenAllDataIsNotPresent(param) {
-  var finalState = testActions(/* :: */[
+  var finalState = reduceActions(/* :: */[
         /* SetOrigin */Block.__(0, ["origin"]),
         /* :: */[
           /* SetDestination */Block.__(1, ["dest"]),
@@ -24,7 +37,7 @@ function testPreventingAlertCreationWhenAllDataIsNotPresent(param) {
 }
 
 function testPreventingAlertCreationWhenAllDataIsPresent(param) {
-  var finalState = testActions(/* :: */[
+  var finalState = reduceActions(/* :: */[
         /* SetOrigin */Block.__(0, ["origin"]),
         /* :: */[
           /* SetDestination */Block.__(1, ["dest"]),
@@ -39,7 +52,8 @@ function testPreventingAlertCreationWhenAllDataIsPresent(param) {
   return /* () */0;
 }
 
-exports.testActions = testActions;
+exports.testInterpreter = testInterpreter;
+exports.reduceActions = reduceActions;
 exports.testPreventingAlertCreationWhenAllDataIsNotPresent = testPreventingAlertCreationWhenAllDataIsNotPresent;
 exports.testPreventingAlertCreationWhenAllDataIsPresent = testPreventingAlertCreationWhenAllDataIsPresent;
 /* RouteAlert-ReasonReactExamples Not a pure module */

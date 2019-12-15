@@ -14,9 +14,9 @@ style.innerHTML = ExampleStyles$ReasonReactExamples.style;
 
 ReactDOMRe.renderToElementWithId(React.createElement(RouteAlert$ReasonReactExamples.make, { }), "route-alert-app");
 
-Test$ReasonReactExamples.testPreventingAlertCreationWhenAllDataIsPresent(/* () */0);
-
 Test$ReasonReactExamples.testPreventingAlertCreationWhenAllDataIsNotPresent(/* () */0);
+
+Test$ReasonReactExamples.testPreventingAlertCreationWhenAllDataIsPresent(/* () */0);
 
 exports.style = style;
 /* style Not a pure module */

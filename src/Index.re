@@ -11,5 +11,7 @@ style##innerHTML #= ExampleStyles.style;
 
 ReactDOMRe.renderToElementWithId(<RouteAlert />, "route-alert-app");
 
-Test.testPreventingAlertCreationWhenAllDataIsPresent();
 Test.testPreventingAlertCreationWhenAllDataIsNotPresent();
+Test.testPreventingAlertCreationWhenAllDataIsPresent();
+
+
