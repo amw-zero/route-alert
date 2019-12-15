@@ -51,12 +51,8 @@ function setDestination(param_0) {
   return /* SetDestination */Block.__(1, [param_0]);
 }
 
-function fetchRoute(param_0) {
-  return /* FetchRoute */Block.__(3, [param_0]);
-}
-
 function fetchedRoute(param_0) {
-  return /* FetchedRoute */Block.__(4, [param_0]);
+  return /* FetchedRoute */Block.__(3, [param_0]);
 }
 
 var initialState = {
@@ -113,19 +109,6 @@ function directionsApi(origin, destination) {
   return "https://maps.googleapis.com/maps/api/directions/json?origin=" + (origin + ("&destination=" + (destination + "&key=AIzaSyC6AfIwElNGcfmzz-XyBHUb3ftWb2SL2vU")));
 }
 
-function dispatchFetchDirections(state) {
-  var match = state.origin;
-  var match$1 = state.destination;
-  if (match !== undefined && match$1 !== undefined) {
-    return /* FetchRoute */Block.__(3, [{
-                origin: match,
-                destination: match$1
-              }]);
-  } else {
-    return /* Noop */0;
-  }
-}
-
 function canFetch(state) {
   var match = state.routeFetchAbility;
   if (match) {
@@ -138,10 +121,24 @@ function canFetch(state) {
 function reducer(state, action) {
   var tmp;
   if (typeof action === "number") {
-    tmp = /* tuple */[
-      state,
-      undefined
-    ];
+    tmp = action === /* FetchRoute */0 ? /* tuple */[
+        {
+          origin: state.origin,
+          destination: state.destination,
+          minutes: state.minutes,
+          routeFetchAbility: state.routeFetchAbility,
+          dataLoadingState: /* Loading */0,
+          routeDuration: state.routeDuration
+        },
+        /* CalculateRoute */[
+          Belt_Option.getExn(state.origin),
+          Belt_Option.getExn(state.destination),
+          fetchedRoute
+        ]
+      ] : /* tuple */[
+        state,
+        undefined
+      ];
   } else {
     switch (action.tag | 0) {
       case /* SetOrigin */0 :
@@ -183,26 +180,7 @@ function reducer(state, action) {
             undefined
           ];
           break;
-      case /* FetchRoute */3 :
-          tmp = /* tuple */[
-            {
-              origin: state.origin,
-              destination: state.destination,
-              minutes: state.minutes,
-              routeFetchAbility: state.routeFetchAbility,
-              dataLoadingState: /* Loading */0,
-              routeDuration: state.routeDuration
-            },
-            /* CalculateRoute */[
-              Belt_Option.getExn(state.origin),
-              Belt_Option.getExn(state.destination),
-              fetchedRoute
-            ]
-          ];
-          break;
-      case /* FetchedRoute */4 :
-          var i = action[0];
-          console.log(String(i));
+      case /* FetchedRoute */3 :
           tmp = /* tuple */[
             {
               origin: state.origin,
@@ -210,7 +188,7 @@ function reducer(state, action) {
               minutes: state.minutes,
               routeFetchAbility: state.routeFetchAbility,
               dataLoadingState: state.dataLoadingState,
-              routeDuration: i
+              routeDuration: action[0]
             },
             undefined
           ];
@@ -267,14 +245,16 @@ function RouteAlert(Props) {
                       }))), React.createElement("p", undefined, "Minutes: " + displayInt(state.minutes)), React.createElement("button", {
                   disabled: !canFetch(state),
                   onClick: (function (param) {
-                      return Curry._1(dispatch, dispatchFetchDirections(state));
+                      return Curry._1(dispatch, /* FetchRoute */0);
                     })
                 }, "Set alert"), React.createElement("p", undefined, "Route duration: " + Belt_Option.mapWithDefault(state.routeDuration, "None", (function (prim) {
                         return String(prim);
                       }))));
 }
 
-var noop = /* Noop */0;
+var fetchRoute = /* FetchRoute */0;
+
+var noop = /* Noop */1;
 
 var make = RouteAlert;
 
@@ -291,7 +271,6 @@ exports.displayInt = displayInt;
 exports.dispatchEvent = dispatchEvent;
 exports.setMinutes = setMinutes;
 exports.directionsApi = directionsApi;
-exports.dispatchFetchDirections = dispatchFetchDirections;
 exports.canFetch = canFetch;
 exports.reducer = reducer;
 exports.interpreter = interpreter;

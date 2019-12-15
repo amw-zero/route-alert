@@ -3,7 +3,7 @@ open RouteAlert;
 
 let testInterpreter = (effect, dispatch) => {
   switch (effect) {
-    | CalculateRoute(_, _, actionCtor) => dispatch(actionCtor(5))
+    | CalculateRoute(_, _, actionCtor) => dispatch(actionCtor(90))
   };
 };
 
@@ -12,8 +12,7 @@ let reduceActions = (actions) => {
   actions->reduce(
     initialState,
     (_, action) => {
-      let dispatch = Reffect.makeDispatch(state^, reducer, testInterpreter, s => state:= s);
-      dispatch(action);
+      Reffect.makeDispatch(state^, reducer, testInterpreter, s => state:= s)(action);
 
       state^
     }
@@ -42,5 +41,19 @@ let testPreventingAlertCreationWhenAllDataIsPresent = () => {
   Js.log(switch(finalState.routeFetchAbility) {
     | CanFetch => "pass"
     | CannotFetch => "fail"
+  });
+};
+
+let testCalculatingRouteDuration = () => {
+  let finalState = reduceActions([
+    SetOrigin("origin"), 
+    SetDestination("dest"), 
+    SetMinutes(5),
+    FetchRoute
+  ]);
+
+  Js.log(switch(finalState.routeDuration) {
+    | Some(90) => "pass"
+    | _ => "fail"
   });
 };

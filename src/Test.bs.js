@@ -6,7 +6,7 @@ var Belt_List = require("bs-platform/lib/js/belt_List.js");
 var RouteAlert$ReasonReactExamples = require("./RouteAlert.bs.js");
 
 function testInterpreter(effect, dispatch) {
-  return Curry._1(dispatch, Curry._1(effect[2], 5));
+  return Curry._1(dispatch, Curry._1(effect[2], 90));
 }
 
 function reduceActions(actions) {
@@ -14,11 +14,10 @@ function reduceActions(actions) {
     contents: RouteAlert$ReasonReactExamples.initialState
   };
   return Belt_List.reduce(actions, RouteAlert$ReasonReactExamples.initialState, (function (param, action) {
-                var dispatch = RouteAlert$ReasonReactExamples.Reffect.makeDispatch(state.contents, RouteAlert$ReasonReactExamples.reducer, testInterpreter, (function (s) {
-                        state.contents = s;
-                        return /* () */0;
-                      }));
-                Curry._1(dispatch, action);
+                RouteAlert$ReasonReactExamples.Reffect.makeDispatch(state.contents, RouteAlert$ReasonReactExamples.reducer, testInterpreter, (function (s) {
+                          state.contents = s;
+                          return /* () */0;
+                        }))(action);
                 return state.contents;
               }));
 }
@@ -52,8 +51,28 @@ function testPreventingAlertCreationWhenAllDataIsPresent(param) {
   return /* () */0;
 }
 
+function testCalculatingRouteDuration(param) {
+  var finalState = reduceActions(/* :: */[
+        /* SetOrigin */Block.__(0, ["origin"]),
+        /* :: */[
+          /* SetDestination */Block.__(1, ["dest"]),
+          /* :: */[
+            /* SetMinutes */Block.__(2, [5]),
+            /* :: */[
+              /* FetchRoute */0,
+              /* [] */0
+            ]
+          ]
+        ]
+      ]);
+  var match = finalState.routeDuration;
+  console.log(match === 90 ? "pass" : "fail");
+  return /* () */0;
+}
+
 exports.testInterpreter = testInterpreter;
 exports.reduceActions = reduceActions;
 exports.testPreventingAlertCreationWhenAllDataIsNotPresent = testPreventingAlertCreationWhenAllDataIsNotPresent;
 exports.testPreventingAlertCreationWhenAllDataIsPresent = testPreventingAlertCreationWhenAllDataIsPresent;
+exports.testCalculatingRouteDuration = testCalculatingRouteDuration;
 /* RouteAlert-ReasonReactExamples Not a pure module */

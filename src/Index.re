@@ -13,5 +13,6 @@ ReactDOMRe.renderToElementWithId(<RouteAlert />, "route-alert-app");
 
 Test.testPreventingAlertCreationWhenAllDataIsNotPresent();
 Test.testPreventingAlertCreationWhenAllDataIsPresent();
+Test.testCalculatingRouteDuration();
 
 

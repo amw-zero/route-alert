@@ -51,7 +51,7 @@ type action =
   | SetOrigin(string)
   | SetDestination(string)
   | SetMinutes(int)
-  | FetchRoute(route)
+  | FetchRoute
   | FetchedRoute(int)
   | Noop;
 
@@ -122,13 +122,6 @@ let directionsApi = (origin, destination) => {
   ++ "&key=AIzaSyC6AfIwElNGcfmzz-XyBHUb3ftWb2SL2vU";
 };
 
-let dispatchFetchDirections = state => {
-  switch (state.origin, state.destination) {
-  | (Some(sp), Some(d)) => FetchRoute({origin: sp, destination: d})
-  | _ => Noop
-  };
-};
-
 let canFetch = state =>
   switch (state.routeFetchAbility) {
   | CanFetch => true
@@ -155,7 +148,7 @@ let reducer = (state, action) => {
     | SetOrigin(point) => ({...state, origin: Some(point)}, None)
     | SetDestination(dest) => ({...state, destination: Some(dest)}, None)
     | SetMinutes(minutes) => ({...state, minutes: Some(minutes)}, None)
-    | FetchRoute(route) => (
+    | FetchRoute => (
         {...state, dataLoadingState: Loading},
         Some(
           CalculateRoute(
@@ -166,7 +159,6 @@ let reducer = (state, action) => {
         ),
       )
     | FetchedRoute(i) =>
-      Js.log(string_of_int(i));
       ({...state, routeDuration: Some(i)}, None);
     | Noop => (state, None)
     };
@@ -224,7 +216,7 @@ let make = () => {
     <p> {React.string("Minutes: " ++ displayInt(state.minutes))} </p>
     <button
       disabled={!canFetch(state)}
-      onClick={_ => dispatch(dispatchFetchDirections(state))}>
+      onClick={_ => dispatch(FetchRoute)}>
       {React.string("Set alert")}
     </button>
     <p>
