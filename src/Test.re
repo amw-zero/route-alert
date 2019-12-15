@@ -19,8 +19,3 @@ let testPreventingAlertCreationWhenAllDataIsPresent = () => {
     | CannotFetch => "fail"
   });
 };
-
-
-
-testPreventingAlertCreationWhenAllDataIsNotPresent();
-testPreventingAlertCreationWhenAllDataIsPresent();

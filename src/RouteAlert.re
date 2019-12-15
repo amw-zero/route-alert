@@ -3,23 +3,39 @@ open Belt.Option;
 open Js.Promise;
 
 module Reffect = {
-  let useReducer =
-      (
-        initialState: 's,
-        reducer: ('s, 'a) => ('s, option('e)),
-        interpreter: ('e, 'a => unit) => unit,
-      )
-      : ('s, 'a => unit) => {
-    let (state, setState) = React.useState(() => initialState);
+  type reducerFunc('s, 'a, 'e) = ('s, 'a) => ('s, option('e));
+  type dispatchFunc('a) = 'a => unit;
 
+  let makeDispatch =
+      (
+        state: 's,
+        reducer: reducerFunc('s, 'a, 'e),
+        interpreter: ('e, dispatchFunc('a)) => unit,
+        onNextState: 's => unit,
+      )
+      : dispatchFunc('a) => {
     let rec dispatch = (action: 'a): unit => {
       let (nextState, nextEffect) = reducer(state, action);
-      setState(_ => nextState);
+      onNextState(nextState);
       switch (nextEffect) {
       | Some(effect) => interpreter(effect, dispatch)
       | None => ()
       };
     };
+
+    dispatch;
+  };
+
+  let useReducer =
+      (
+        initialState: 's,
+        reducer: reducerFunc('s, 'a, 'e),
+        interpreter: ('e, dispatchFunc('a)) => unit,
+      )
+      : ('s, dispatchFunc('a)) => {
+    let (state, setState) = React.useState(() => initialState);
+    let dispatch =
+      makeDispatch(state, reducer, interpreter, s => setState(_ => s));
 
     (state, dispatch);
   };
@@ -53,7 +69,7 @@ type state = {
   minutes: option(int),
   routeFetchAbility,
   dataLoadingState,
-  routeDuration: option(int)
+  routeDuration: option(int),
 };
 
 let initialState = {
@@ -62,7 +78,7 @@ let initialState = {
   minutes: None,
   routeFetchAbility: CannotFetch,
   dataLoadingState: NotLoading,
-  routeDuration: None
+  routeDuration: None,
 };
 
 let applyFetchAbility = stateEffect => {
@@ -129,11 +145,9 @@ type googleDirections = {routes: array(googleRoute)};
 
 // Reffect model
 
-type startPoint = string;
-type destination = string;
 
 type effect('a) =
-  | CalculateRoute(startPoint, destination, int => 'a);
+  | CalculateRoute(string, string, int => 'a);
 
 let reducer = (state, action) => {
   let res =
@@ -153,7 +167,7 @@ let reducer = (state, action) => {
       )
     | FetchedRoute(i) =>
       Js.log(string_of_int(i));
-      ({...state, routeDuration: Some(i)}, None)
+      ({...state, routeDuration: Some(i)}, None);
     | Noop => (state, None)
     };
 
@@ -166,8 +180,8 @@ let interpreter = (effect, dispatch) => {
     let api = directionsApi(startPoint, destination);
     Js.log(api);
     Fetch.fetch(api)
-      |> then_(Fetch.Response.json)
-      |> then_(json => Js.log(json) |> resolve);
+    |> then_(Fetch.Response.json)
+    |> then_(json => Js.log(json) |> resolve);
 
     let _ =
       setTimeout(
@@ -181,29 +195,6 @@ let interpreter = (effect, dispatch) => {
     ();
   };
 };
-
-let testPreventingAlertCreationWhenAllDataIsNotPresent = () => {
-  let actions = [SetStartPoint("origin"), SetDestination("dest")];
-  let finalState = Belt.List.reduce(actions, initialState, (s, a) => reducer(s, a) |> fst);
-
-  Js.log(switch(finalState.routeFetchAbility) {
-    | CanFetch => "fail"
-    | CannotFetch => "pass"
-  });
-};
-
-let testPreventingAlertCreationWhenAllDataIsPresent = () => {
-  let actions = [SetStartPoint("origin"), SetDestination("dest"), SetMinutes(5)];
-  let finalState = Belt.List.reduce(actions, initialState, (s, a) => reducer(s, a) |> fst);
-
-  Js.log(switch(finalState.routeFetchAbility) {
-    | CanFetch => "pass"
-    | CannotFetch => "fail"
-  });
-};
-
-testPreventingAlertCreationWhenAllDataIsNotPresent();
-testPreventingAlertCreationWhenAllDataIsPresent();
 
 [@react.component]
 let make = () => {
@@ -236,6 +227,11 @@ let make = () => {
       onClick={_ => dispatch(dispatchFetchDirections(state))}>
       {React.string("Set alert")}
     </button>
-    <p>{React.string("Route duration: " ++ state.routeDuration->mapWithDefault("None", string_of_int))}</p>
+    <p>
+      {React.string(
+         "Route duration: "
+         ++ state.routeDuration->mapWithDefault("None", string_of_int),
+       )}
+    </p>
   </>;
 };

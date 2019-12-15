@@ -39,11 +39,7 @@ function testPreventingAlertCreationWhenAllDataIsPresent(param) {
   return /* () */0;
 }
 
-testPreventingAlertCreationWhenAllDataIsNotPresent(/* () */0);
-
-testPreventingAlertCreationWhenAllDataIsPresent(/* () */0);
-
 exports.testActions = testActions;
 exports.testPreventingAlertCreationWhenAllDataIsNotPresent = testPreventingAlertCreationWhenAllDataIsNotPresent;
 exports.testPreventingAlertCreationWhenAllDataIsPresent = testPreventingAlertCreationWhenAllDataIsPresent;
-/*  Not a pure module */
+/* RouteAlert-ReasonReactExamples Not a pure module */

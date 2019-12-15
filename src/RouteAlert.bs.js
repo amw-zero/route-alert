@@ -3,10 +3,23 @@
 var Block = require("bs-platform/lib/js/block.js");
 var Curry = require("bs-platform/lib/js/curry.js");
 var React = require("react");
-var Belt_List = require("bs-platform/lib/js/belt_List.js");
 var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
 var Caml_format = require("bs-platform/lib/js/caml_format.js");
 var Caml_option = require("bs-platform/lib/js/caml_option.js");
+
+function makeDispatch(state, reducer, interpreter, onNextState) {
+  var dispatch = function (action) {
+    var match = Curry._2(reducer, state, action);
+    var nextEffect = match[1];
+    Curry._1(onNextState, match[0]);
+    if (nextEffect !== undefined) {
+      return Curry._2(interpreter, Caml_option.valFromOption(nextEffect), dispatch);
+    } else {
+      return /* () */0;
+    }
+  };
+  return dispatch;
+}
 
 function useReducer(initialState, reducer, interpreter) {
   var match = React.useState((function () {
@@ -14,19 +27,11 @@ function useReducer(initialState, reducer, interpreter) {
         }));
   var setState = match[1];
   var state = match[0];
-  var dispatch = function (action) {
-    var match = Curry._2(reducer, state, action);
-    var nextEffect = match[1];
-    var nextState = match[0];
-    Curry._1(setState, (function (param) {
-            return nextState;
-          }));
-    if (nextEffect !== undefined) {
-      return Curry._2(interpreter, Caml_option.valFromOption(nextEffect), dispatch);
-    } else {
-      return /* () */0;
-    }
-  };
+  var dispatch = makeDispatch(state, reducer, interpreter, (function (s) {
+          return Curry._1(setState, (function (param) {
+                        return s;
+                      }));
+        }));
   return /* tuple */[
           state,
           dispatch
@@ -34,6 +39,7 @@ function useReducer(initialState, reducer, interpreter) {
 }
 
 var Reffect = {
+  makeDispatch: makeDispatch,
   useReducer: useReducer
 };
 
@@ -232,43 +238,6 @@ function interpreter(effect, dispatch) {
   return /* () */0;
 }
 
-function testPreventingAlertCreationWhenAllDataIsNotPresent(param) {
-  var finalState = Belt_List.reduce(/* :: */[
-        /* SetStartPoint */Block.__(0, ["origin"]),
-        /* :: */[
-          /* SetDestination */Block.__(1, ["dest"]),
-          /* [] */0
-        ]
-      ], initialState, (function (s, a) {
-          return reducer(s, a)[0];
-        }));
-  var match = finalState.routeFetchAbility;
-  console.log(match ? "pass" : "fail");
-  return /* () */0;
-}
-
-function testPreventingAlertCreationWhenAllDataIsPresent(param) {
-  var finalState = Belt_List.reduce(/* :: */[
-        /* SetStartPoint */Block.__(0, ["origin"]),
-        /* :: */[
-          /* SetDestination */Block.__(1, ["dest"]),
-          /* :: */[
-            /* SetMinutes */Block.__(2, [5]),
-            /* [] */0
-          ]
-        ]
-      ], initialState, (function (s, a) {
-          return reducer(s, a)[0];
-        }));
-  var match = finalState.routeFetchAbility;
-  console.log(match ? "fail" : "pass");
-  return /* () */0;
-}
-
-testPreventingAlertCreationWhenAllDataIsNotPresent(/* () */0);
-
-testPreventingAlertCreationWhenAllDataIsPresent(/* () */0);
-
 function RouteAlert(Props) {
   var match = useReducer(initialState, reducer, interpreter);
   var dispatch = match[1];
@@ -326,7 +295,5 @@ exports.dispatchFetchDirections = dispatchFetchDirections;
 exports.canFetch = canFetch;
 exports.reducer = reducer;
 exports.interpreter = interpreter;
-exports.testPreventingAlertCreationWhenAllDataIsNotPresent = testPreventingAlertCreationWhenAllDataIsNotPresent;
-exports.testPreventingAlertCreationWhenAllDataIsPresent = testPreventingAlertCreationWhenAllDataIsPresent;
 exports.make = make;
-/*  Not a pure module */
+/* react Not a pure module */
