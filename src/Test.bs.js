@@ -12,7 +12,7 @@ function testActions(actions) {
 
 function testPreventingAlertCreationWhenAllDataIsNotPresent(param) {
   var finalState = testActions(/* :: */[
-        /* SetStartPoint */Block.__(0, ["origin"]),
+        /* SetOrigin */Block.__(0, ["origin"]),
         /* :: */[
           /* SetDestination */Block.__(1, ["dest"]),
           /* [] */0
@@ -25,7 +25,7 @@ function testPreventingAlertCreationWhenAllDataIsNotPresent(param) {
 
 function testPreventingAlertCreationWhenAllDataIsPresent(param) {
   var finalState = testActions(/* :: */[
-        /* SetStartPoint */Block.__(0, ["origin"]),
+        /* SetOrigin */Block.__(0, ["origin"]),
         /* :: */[
           /* SetDestination */Block.__(1, ["dest"]),
           /* :: */[

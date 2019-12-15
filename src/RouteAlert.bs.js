@@ -43,8 +43,8 @@ var Reffect = {
   useReducer: useReducer
 };
 
-function setStartPoint(param_0) {
-  return /* SetStartPoint */Block.__(0, [param_0]);
+function setOrigin(param_0) {
+  return /* SetOrigin */Block.__(0, [param_0]);
 }
 
 function setDestination(param_0) {
@@ -60,7 +60,7 @@ function fetchedRoute(param_0) {
 }
 
 var initialState = {
-  startPoint: undefined,
+  origin: undefined,
   destination: undefined,
   minutes: undefined,
   routeFetchAbility: /* CannotFetch */1,
@@ -70,13 +70,13 @@ var initialState = {
 
 function applyFetchAbility(stateEffect) {
   var state = stateEffect[0];
-  var match = state.startPoint;
+  var match = state.origin;
   var match$1 = state.destination;
   var match$2 = state.minutes;
   var routeFetchAbility = match !== undefined && match$1 !== undefined && match$2 !== undefined ? /* CanFetch */0 : /* CannotFetch */1;
   return /* tuple */[
           {
-            startPoint: state.startPoint,
+            origin: state.origin,
             destination: state.destination,
             minutes: state.minutes,
             routeFetchAbility: routeFetchAbility,
@@ -109,16 +109,16 @@ function setMinutes(e) {
   return /* SetMinutes */Block.__(2, [Caml_format.caml_int_of_string(e.target.value)]);
 }
 
-function directionsApi(startPoint, destination) {
-  return "https://maps.googleapis.com/maps/api/directions/json?origin=" + (startPoint + ("&destination=" + (destination + "&key=AIzaSyC6AfIwElNGcfmzz-XyBHUb3ftWb2SL2vU")));
+function directionsApi(origin, destination) {
+  return "https://maps.googleapis.com/maps/api/directions/json?origin=" + (origin + ("&destination=" + (destination + "&key=AIzaSyC6AfIwElNGcfmzz-XyBHUb3ftWb2SL2vU")));
 }
 
 function dispatchFetchDirections(state) {
-  var match = state.startPoint;
+  var match = state.origin;
   var match$1 = state.destination;
   if (match !== undefined && match$1 !== undefined) {
     return /* FetchRoute */Block.__(3, [{
-                startPoint: match,
+                origin: match,
                 destination: match$1
               }]);
   } else {
@@ -144,10 +144,10 @@ function reducer(state, action) {
     ];
   } else {
     switch (action.tag | 0) {
-      case /* SetStartPoint */0 :
+      case /* SetOrigin */0 :
           tmp = /* tuple */[
             {
-              startPoint: action[0],
+              origin: action[0],
               destination: state.destination,
               minutes: state.minutes,
               routeFetchAbility: state.routeFetchAbility,
@@ -160,7 +160,7 @@ function reducer(state, action) {
       case /* SetDestination */1 :
           tmp = /* tuple */[
             {
-              startPoint: state.startPoint,
+              origin: state.origin,
               destination: action[0],
               minutes: state.minutes,
               routeFetchAbility: state.routeFetchAbility,
@@ -173,7 +173,7 @@ function reducer(state, action) {
       case /* SetMinutes */2 :
           tmp = /* tuple */[
             {
-              startPoint: state.startPoint,
+              origin: state.origin,
               destination: state.destination,
               minutes: action[0],
               routeFetchAbility: state.routeFetchAbility,
@@ -186,7 +186,7 @@ function reducer(state, action) {
       case /* FetchRoute */3 :
           tmp = /* tuple */[
             {
-              startPoint: state.startPoint,
+              origin: state.origin,
               destination: state.destination,
               minutes: state.minutes,
               routeFetchAbility: state.routeFetchAbility,
@@ -194,7 +194,7 @@ function reducer(state, action) {
               routeDuration: state.routeDuration
             },
             /* CalculateRoute */[
-              Belt_Option.getExn(state.startPoint),
+              Belt_Option.getExn(state.origin),
               Belt_Option.getExn(state.destination),
               fetchedRoute
             ]
@@ -205,7 +205,7 @@ function reducer(state, action) {
           console.log(String(i));
           tmp = /* tuple */[
             {
-              startPoint: state.startPoint,
+              origin: state.origin,
               destination: state.destination,
               minutes: state.minutes,
               routeFetchAbility: state.routeFetchAbility,
@@ -246,7 +246,7 @@ function RouteAlert(Props) {
                   name: "start-point",
                   type: "text",
                   onChange: (function (e) {
-                      return Curry._1(dispatch, dispatchEvent(setStartPoint, e));
+                      return Curry._1(dispatch, dispatchEvent(setOrigin, e));
                     })
                 }), React.createElement("input", {
                   name: "destination",
@@ -260,7 +260,7 @@ function RouteAlert(Props) {
                   onChange: (function (e) {
                       return Curry._1(dispatch, setMinutes(e));
                     })
-                }), React.createElement("p", undefined, "Start: " + Belt_Option.mapWithDefault(state.startPoint, "nada", (function (s) {
+                }), React.createElement("p", undefined, "Start: " + Belt_Option.mapWithDefault(state.origin, "nada", (function (s) {
                         return s;
                       }))), React.createElement("p", undefined, "Destination: " + Belt_Option.mapWithDefault(state.destination, "nada", (function (s) {
                         return s;
@@ -279,7 +279,7 @@ var noop = /* Noop */0;
 var make = RouteAlert;
 
 exports.Reffect = Reffect;
-exports.setStartPoint = setStartPoint;
+exports.setOrigin = setOrigin;
 exports.setDestination = setDestination;
 exports.fetchRoute = fetchRoute;
 exports.fetchedRoute = fetchedRoute;

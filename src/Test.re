@@ -3,7 +3,7 @@ let testActions = (actions) => {
 };
 
 let testPreventingAlertCreationWhenAllDataIsNotPresent = () => {
-  let finalState = testActions([RouteAlert.SetStartPoint("origin"), SetDestination("dest")]);
+  let finalState = testActions([RouteAlert.SetOrigin("origin"), SetDestination("dest")]);
 
   Js.log(switch(finalState.routeFetchAbility) {
     | CanFetch => "fail"
@@ -12,7 +12,7 @@ let testPreventingAlertCreationWhenAllDataIsNotPresent = () => {
 };
 
 let testPreventingAlertCreationWhenAllDataIsPresent = () => {
-  let finalState = testActions([RouteAlert.SetStartPoint("origin"), SetDestination("dest"), SetMinutes(5)]);
+  let finalState = testActions([RouteAlert.SetOrigin("origin"), SetDestination("dest"), SetMinutes(5)]);
 
   Js.log(switch(finalState.routeFetchAbility) {
     | CanFetch => "pass"

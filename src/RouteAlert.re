@@ -42,13 +42,13 @@ module Reffect = {
 };
 
 type route = {
-  startPoint: string,
+  origin: string,
   destination: string,
 };
 
 [@bs.deriving accessors]
 type action =
-  | SetStartPoint(string)
+  | SetOrigin(string)
   | SetDestination(string)
   | SetMinutes(int)
   | FetchRoute(route)
@@ -64,7 +64,7 @@ type dataLoadingState =
   | NotLoading;
 
 type state = {
-  startPoint: option(string),
+  origin: option(string),
   destination: option(string),
   minutes: option(int),
   routeFetchAbility,
@@ -73,7 +73,7 @@ type state = {
 };
 
 let initialState = {
-  startPoint: None,
+  origin: None,
   destination: None,
   minutes: None,
   routeFetchAbility: CannotFetch,
@@ -84,7 +84,7 @@ let initialState = {
 let applyFetchAbility = stateEffect => {
   let state = fst(stateEffect);
   let routeFetchAbility =
-    switch (state.startPoint, state.destination, state.minutes) {
+    switch (state.origin, state.destination, state.minutes) {
     | (Some(_), Some(_), Some(_)) => CanFetch
     | _ => CannotFetch
     };
@@ -114,17 +114,17 @@ let setMinutes = e => {
   SetMinutes(int_of_string(e->ReactEvent.Form.target##value));
 };
 
-let directionsApi = (startPoint, destination) => {
+let directionsApi = (origin, destination) => {
   "https://maps.googleapis.com/maps/api/directions/json?origin="
-  ++ startPoint
+  ++ origin
   ++ "&destination="
   ++ destination
   ++ "&key=AIzaSyC6AfIwElNGcfmzz-XyBHUb3ftWb2SL2vU";
 };
 
 let dispatchFetchDirections = state => {
-  switch (state.startPoint, state.destination) {
-  | (Some(sp), Some(d)) => FetchRoute({startPoint: sp, destination: d})
+  switch (state.origin, state.destination) {
+  | (Some(sp), Some(d)) => FetchRoute({origin: sp, destination: d})
   | _ => Noop
   };
 };
@@ -152,14 +152,14 @@ type effect('a) =
 let reducer = (state, action) => {
   let res =
     switch (action) {
-    | SetStartPoint(point) => ({...state, startPoint: Some(point)}, None)
+    | SetOrigin(point) => ({...state, origin: Some(point)}, None)
     | SetDestination(dest) => ({...state, destination: Some(dest)}, None)
     | SetMinutes(minutes) => ({...state, minutes: Some(minutes)}, None)
     | FetchRoute(route) => (
         {...state, dataLoadingState: Loading},
         Some(
           CalculateRoute(
-            state.startPoint->getExn,
+            state.origin->getExn,
             state.destination->getExn,
             fetchedRoute,
           ),
@@ -176,8 +176,8 @@ let reducer = (state, action) => {
 
 let interpreter = (effect, dispatch) => {
   switch (effect) {
-  | CalculateRoute(startPoint, destination, actionCtor) =>
-    let api = directionsApi(startPoint, destination);
+  | CalculateRoute(origin, destination, actionCtor) =>
+    let api = directionsApi(origin, destination);
     Js.log(api);
     Fetch.fetch(api)
     |> then_(Fetch.Response.json)
@@ -205,7 +205,7 @@ let make = () => {
     <input
       name="start-point"
       type_="text"
-      onChange={e => dispatch(dispatchEvent(setStartPoint, e))}
+      onChange={e => dispatch(dispatchEvent(setOrigin, e))}
     />
     <input
       name="destination"
@@ -217,7 +217,7 @@ let make = () => {
       type_="number"
       onChange={e => dispatch(setMinutes(e))}
     />
-    <p> {React.string("Start: " ++ displayString(state.startPoint))} </p>
+    <p> {React.string("Start: " ++ displayString(state.origin))} </p>
     <p>
       {React.string("Destination: " ++ displayString(state.destination))}
     </p>
