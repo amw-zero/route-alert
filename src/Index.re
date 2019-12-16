@@ -10,12 +10,3 @@ document##head##appendChild(style);
 style##innerHTML #= ExampleStyles.style;
 
 ReactDOMRe.renderToElementWithId(<RouteAlert />, "route-alert-app");
-
-Test.testPreventingAlertCreationWhenAllDataIsNotPresent();
-Test.testPreventingAlertCreationWhenAllDataIsPresent();
-Test.testCalculatingRouteDuration();
-Test.testCalculatingRouteDuration();
-
-
-
-
