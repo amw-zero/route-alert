@@ -2,6 +2,8 @@ open RouteAlertBehavior;
 open Belt.Option;
 open Js.Promise;
 
+[@bs.val] external setTimeout : (unit => unit, int) => float = "setTimeout";
+
 module ReactReffect {
   let useReducer =
       (
@@ -28,36 +30,33 @@ let dispatchEvent = (actionCtor, e) => {
   actionCtor(s);
 };
 
+let displayString = ostr => {
+  mapWithDefault(ostr, "nada", s => s);
+};
+
+let displayInt = i => {
+  mapWithDefault(i, "nada", n => string_of_int(n));
+};
+
 let setMinutes = e => {
   SetMinutes(int_of_string(e->ReactEvent.Form.target##value));
 };
 
-let interpreter = (effect, dispatch) => {
-  switch (effect) {
-  | CalculateRoute(origin, destination, actionCtor) =>
-    let api = directionsApi(origin, destination);
-    Js.log(api);
-    let _ = Fetch.fetch(api)
-    |> then_(Fetch.Response.json)
-    |> then_(json => Js.log(json) |> resolve);
-
-    let _ =
-      setTimeout(
-        () => {
-          Js.log("test");
-          dispatch(actionCtor(5));
-          ();
-        },
-        1_000,
-      );
-    ();
+let networkRequest = (endpoint, respond) => {
+  switch (endpoint) {
+   | CalculateRoute2(_) => respond({ duration: 5 });
   };
+
+//   let _ = Fetch.fetch(api)
+//     |> then_(Fetch.Response.json)
 };
+
+let appInterpreter: (effect(action), action => unit) => unit = behaviorInterpreter(networkRequest);
 
 [@react.component]
 let make = () => {
   let (state, dispatch) =
-    ReactReffect.useReducer(initialState, reducer, interpreter);
+    ReactReffect.useReducer(initialState, reducer, appInterpreter);
 
   <>
     <input

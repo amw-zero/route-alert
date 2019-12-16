@@ -34,29 +34,34 @@ function dispatchEvent(actionCtor, e) {
   return Curry._1(actionCtor, tmp);
 }
 
+function displayString(ostr) {
+  return Belt_Option.mapWithDefault(ostr, "nada", (function (s) {
+                return s;
+              }));
+}
+
+function displayInt(i) {
+  return Belt_Option.mapWithDefault(i, "nada", (function (n) {
+                return String(n);
+              }));
+}
+
 function setMinutes(e) {
   return /* SetMinutes */Block.__(2, [Caml_format.caml_int_of_string(e.target.value)]);
 }
 
-function interpreter(effect, dispatch) {
-  var actionCtor = effect[2];
-  var api = RouteAlertBehavior.directionsApi(effect[0], effect[1]);
-  console.log(api);
-  fetch(api).then((function (prim) {
-            return prim.json();
-          })).then((function (json) {
-          return Promise.resolve((console.log(json), /* () */0));
-        }));
-  setTimeout((function (param) {
-          console.log("test");
-          Curry._1(dispatch, Curry._1(actionCtor, 5));
-          return /* () */0;
-        }), 1000);
-  return /* () */0;
+function networkRequest(endpoint, respond) {
+  return Curry._1(respond, {
+              duration: 5
+            });
+}
+
+function appInterpreter(param, param$1) {
+  return RouteAlertBehavior.behaviorInterpreter(networkRequest, param, param$1);
 }
 
 function RouteAlert(Props) {
-  var match = useReducer(RouteAlertBehavior.initialState, RouteAlertBehavior.reducer, interpreter);
+  var match = useReducer(RouteAlertBehavior.initialState, RouteAlertBehavior.reducer, appInterpreter);
   var dispatch = match[1];
   var state = match[0];
   return React.createElement(React.Fragment, undefined, React.createElement("input", {
@@ -77,7 +82,11 @@ function RouteAlert(Props) {
                   onChange: (function (e) {
                       return Curry._1(dispatch, setMinutes(e));
                     })
-                }), React.createElement("p", undefined, "Start: " + RouteAlertBehavior.displayString(state.origin)), React.createElement("p", undefined, "Destination: " + RouteAlertBehavior.displayString(state.destination)), React.createElement("p", undefined, "Minutes: " + RouteAlertBehavior.displayInt(state.minutes)), React.createElement("button", {
+                }), React.createElement("p", undefined, "Start: " + Belt_Option.mapWithDefault(state.origin, "nada", (function (s) {
+                        return s;
+                      }))), React.createElement("p", undefined, "Destination: " + Belt_Option.mapWithDefault(state.destination, "nada", (function (s) {
+                        return s;
+                      }))), React.createElement("p", undefined, "Minutes: " + displayInt(state.minutes)), React.createElement("button", {
                   disabled: !RouteAlertBehavior.canFetch(state),
                   onClick: (function (param) {
                       return Curry._1(dispatch, /* FetchRoute */0);
@@ -91,7 +100,10 @@ var make = RouteAlert;
 
 exports.ReactReffect = ReactReffect;
 exports.dispatchEvent = dispatchEvent;
+exports.displayString = displayString;
+exports.displayInt = displayInt;
 exports.setMinutes = setMinutes;
-exports.interpreter = interpreter;
+exports.networkRequest = networkRequest;
+exports.appInterpreter = appInterpreter;
 exports.make = make;
 /* react Not a pure module */
