@@ -44,7 +44,9 @@ let setMinutes = e => {
 
 let networkRequest = (endpoint, respond) => {
   switch (endpoint) {
-   | CalculateRoute2(_) => respond({ duration: 5 });
+    | CalculateRoute2(_) => {
+      let _ = setTimeout(() => respond({ duration: 5 }), 1_000);
+    }
   };
 
 //   let _ = Fetch.fetch(api)

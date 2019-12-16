@@ -51,9 +51,12 @@ function setMinutes(e) {
 }
 
 function networkRequest(endpoint, respond) {
-  return Curry._1(respond, {
-              duration: 5
-            });
+  setTimeout((function (param) {
+          return Curry._1(respond, {
+                      duration: 5
+                    });
+        }), 1000);
+  return /* () */0;
 }
 
 function appInterpreter(param, param$1) {
