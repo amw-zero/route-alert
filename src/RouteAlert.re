@@ -42,18 +42,20 @@ let setMinutes = e => {
   SetMinutes(int_of_string(e->ReactEvent.Form.target##value));
 };
 
-let networkRequest = (endpoint, respond) => {
-  switch (endpoint) {
-    | CalculateRoute2(_) => {
-      let _ = setTimeout(() => respond({ duration: 5 }), 1_000);
+let networkBridge = (request, respond) => {
+  switch (request.path) {
+    | "/route_alerts" => {
+      let fakeRouteAlert = { origin: "one", destination: "two", durationMinutes: 5 }
+      let _ = setTimeout(() => routeAlertEncoder(fakeRouteAlert)->respond, 1_000);
     }
+    | _ => errorResponseEncoder({ message: "bad route" })->respond;
   };
 
 //   let _ = Fetch.fetch(api)
 //     |> then_(Fetch.Response.json)
 };
 
-let appInterpreter: (effect(action), action => unit) => unit = behaviorInterpreter(networkRequest);
+let appInterpreter: (effect(action), action => unit) => unit = behaviorInterpreter(networkBridge);
 
 [@react.component]
 let make = () => {

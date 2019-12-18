@@ -50,17 +50,26 @@ function setMinutes(e) {
   return /* SetMinutes */Block.__(2, [Caml_format.caml_int_of_string(e.target.value)]);
 }
 
-function networkRequest(endpoint, respond) {
-  setTimeout((function (param) {
-          return Curry._1(respond, {
-                      duration: 5
-                    });
-        }), 1000);
-  return /* () */0;
+function networkBridge(request, respond) {
+  var match = request.path;
+  if (match === "/route_alerts") {
+    setTimeout((function (param) {
+            return Curry._1(respond, RouteAlertBehavior.routeAlertEncoder({
+                            origin: "one",
+                            destination: "two",
+                            durationMinutes: 5
+                          }));
+          }), 1000);
+    return /* () */0;
+  } else {
+    return Curry._1(respond, RouteAlertBehavior.errorResponseEncoder({
+                    message: "bad route"
+                  }));
+  }
 }
 
 function appInterpreter(param, param$1) {
-  return RouteAlertBehavior.behaviorInterpreter(networkRequest, param, param$1);
+  return RouteAlertBehavior.behaviorInterpreter(networkBridge, param, param$1);
 }
 
 function RouteAlert(Props) {
@@ -106,7 +115,7 @@ exports.dispatchEvent = dispatchEvent;
 exports.displayString = displayString;
 exports.displayInt = displayInt;
 exports.setMinutes = setMinutes;
-exports.networkRequest = networkRequest;
+exports.networkBridge = networkBridge;
 exports.appInterpreter = appInterpreter;
 exports.make = make;
 /* react Not a pure module */
