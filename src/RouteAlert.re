@@ -45,14 +45,22 @@ let setMinutes = e => {
 let networkBridge = (request, respond) => {
   switch (request.path) {
     | "/route_alerts" => {
-      let fakeRouteAlert = { origin: "one", destination: "two", durationMinutes: 5 }
-      let _ = setTimeout(() => routeAlertEncoder(fakeRouteAlert)->respond, 1_000);
-    }
+      Js.log(getExn(request.body)->Json.stringify);
+      let _ = Fetch.fetchWithInit(
+        "http://localhost:3000/route_alerts",
+        Fetch.RequestInit.make(
+          ~method_=Post, 
+          ~body=getExn(request.body)->Json.stringify->Fetch.BodyInit.make,
+          ~headers=Fetch.HeadersInit.make({"Content-Type": "application/json"}),
+          ()
+        )
+      )
+      |> then_(Fetch.Response.json)
+      |> then_(jsonString => jsonString->respond->resolve)
+      |> catch(_ => errorResponseEncoder({ message: "error" })->respond->resolve)
+    };
     | _ => errorResponseEncoder({ message: "bad route" })->respond;
   };
-
-//   let _ = Fetch.fetch(api)
-//     |> then_(Fetch.Response.json)
 };
 
 let appInterpreter: (effect(action), action => unit) => unit = behaviorInterpreter(networkBridge);

@@ -1,10 +1,13 @@
 'use strict';
 
+var Json = require("@glennsl/bs-json/src/Json.bs.js");
 var Block = require("bs-platform/lib/js/block.js");
 var Curry = require("bs-platform/lib/js/curry.js");
+var Fetch = require("bs-fetch/src/Fetch.js");
 var React = require("react");
 var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
 var Caml_format = require("bs-platform/lib/js/caml_format.js");
+var Caml_option = require("bs-platform/lib/js/caml_option.js");
 var RouteAlertBehavior = require("route-alert-behavior/src/RouteAlertBehavior.bs.js");
 
 function useReducer(initialState, reducer, interpreter) {
@@ -53,13 +56,18 @@ function setMinutes(e) {
 function networkBridge(request, respond) {
   var match = request.path;
   if (match === "/route_alerts") {
-    setTimeout((function (param) {
-            return Curry._1(respond, RouteAlertBehavior.routeAlertEncoder({
-                            origin: "one",
-                            destination: "two",
-                            durationMinutes: 5
-                          }));
-          }), 1000);
+    console.log(Json.stringify(Belt_Option.getExn(request.body)));
+    fetch("http://localhost:3000/route_alerts", Fetch.RequestInit.make(/* Post */2, {
+                      "Content-Type": "application/json"
+                    }, Caml_option.some(Json.stringify(Belt_Option.getExn(request.body))), undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined)(/* () */0)).then((function (prim) {
+                return prim.json();
+              })).then((function (jsonString) {
+              return Promise.resolve(Curry._1(respond, jsonString));
+            })).catch((function (param) {
+            return Promise.resolve(Curry._1(respond, RouteAlertBehavior.errorResponseEncoder({
+                                message: "error"
+                              })));
+          }));
     return /* () */0;
   } else {
     return Curry._1(respond, RouteAlertBehavior.errorResponseEncoder({
