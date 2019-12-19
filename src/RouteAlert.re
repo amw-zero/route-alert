@@ -2,9 +2,9 @@ open RouteAlertBehavior;
 open Belt.Option;
 open Js.Promise;
 
-[@bs.val] external setTimeout : (unit => unit, int) => float = "setTimeout";
+[@bs.val] external setTimeout: (unit => unit, int) => float = "setTimeout";
 
-module ReactReffect {
+module ReactReffect = {
   let useReducer =
       (
         initialState: 's,
@@ -17,8 +17,8 @@ module ReactReffect {
       Reffect.makeDispatch(state, reducer, interpreter, s => setState(_ => s));
 
     (state, dispatch);
-  }; 
-}
+  };
+};
 
 let dispatchEvent = (actionCtor, e) => {
   let s =
@@ -44,26 +44,31 @@ let setMinutes = e => {
 
 let networkBridge = (request, respond) => {
   switch (request.path) {
-    | "/route_alerts" => {
-      Js.log(getExn(request.body)->Json.stringify);
-      let _ = Fetch.fetchWithInit(
+  | "/route_alerts" =>
+    Js.log(getExn(request.body)->Json.stringify);
+    let _ =
+      Fetch.fetchWithInit(
         "http://localhost:3000/route_alerts",
         Fetch.RequestInit.make(
-          ~method_=Post, 
+          ~method_=Post,
           ~body=getExn(request.body)->Json.stringify->Fetch.BodyInit.make,
-          ~headers=Fetch.HeadersInit.make({"Content-Type": "application/json"}),
-          ()
-        )
+          ~headers=
+            Fetch.HeadersInit.make({"Content-Type": "application/json"}),
+          (),
+        ),
       )
       |> then_(Fetch.Response.json)
       |> then_(jsonString => jsonString->respond->resolve)
-      |> catch(_ => errorResponseEncoder({ message: "error" })->respond->resolve)
-    };
-    | _ => errorResponseEncoder({ message: "bad route" })->respond;
+      |> catch(_ =>
+           errorResponseEncoder({message: "error"})->respond->resolve
+         );
+    ();
+  | _ => errorResponseEncoder({message: "bad route"})->respond
   };
 };
 
-let appInterpreter: (effect(action), action => unit) => unit = behaviorInterpreter(networkBridge);
+let appInterpreter: (effect(action), action => unit) => unit =
+  behaviorInterpreter(networkBridge);
 
 [@react.component]
 let make = () => {
@@ -91,9 +96,7 @@ let make = () => {
       {React.string("Destination: " ++ displayString(state.destination))}
     </p>
     <p> {React.string("Minutes: " ++ displayInt(state.minutes))} </p>
-    <button
-      disabled={!canFetch(state)}
-      onClick={_ => dispatch(FetchRoute)}>
+    <button disabled={!canFetch(state)} onClick={_ => dispatch(FetchRoute)}>
       {React.string("Set alert")}
     </button>
     <p>
