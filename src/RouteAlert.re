@@ -42,6 +42,13 @@ let setMinutes = e => {
   SetMinutes(int_of_string(e->ReactEvent.Form.target##value));
 };
 
+let loadingIndicator = (dataLoadingState) => {
+  switch (dataLoadingState) {
+    | Loading => <p>{React.string("Loading")}</p>
+    | _ => ReasonReact.null
+  };
+}
+
 let networkBridge = (request, respond) => {
   switch (request.path) {
   | "/route_alerts" =>
@@ -98,6 +105,7 @@ let make = () => {
     <button disabled={!canFetch(state)} onClick={_ => dispatch(FetchRoute)}>
       {React.string("Set alert")}
     </button>
+    {loadingIndicator(state.dataLoadingState)}
     <p>
       {React.string(
          "Route duration: "

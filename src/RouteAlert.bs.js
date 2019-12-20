@@ -53,6 +53,14 @@ function setMinutes(e) {
   return /* SetMinutes */Block.__(2, [Caml_format.caml_int_of_string(e.target.value)]);
 }
 
+function loadingIndicator(dataLoadingState) {
+  if (dataLoadingState) {
+    return null;
+  } else {
+    return React.createElement("p", undefined, "Loading");
+  }
+}
+
 function networkBridge(request, respond) {
   var match = request.path;
   if (match === "/route_alerts") {
@@ -110,7 +118,7 @@ function RouteAlert(Props) {
                   onClick: (function (param) {
                       return Curry._1(dispatch, /* FetchRoute */0);
                     })
-                }, "Set alert"), React.createElement("p", undefined, "Route duration: " + Belt_Option.mapWithDefault(state.routeDuration, "None", (function (prim) {
+                }, "Set alert"), loadingIndicator(state.dataLoadingState), React.createElement("p", undefined, "Route duration: " + Belt_Option.mapWithDefault(state.routeDuration, "None", (function (prim) {
                         return String(prim);
                       }))));
 }
@@ -122,6 +130,7 @@ exports.dispatchEvent = dispatchEvent;
 exports.displayString = displayString;
 exports.displayInt = displayInt;
 exports.setMinutes = setMinutes;
+exports.loadingIndicator = loadingIndicator;
 exports.networkBridge = networkBridge;
 exports.appInterpreter = appInterpreter;
 exports.make = make;
