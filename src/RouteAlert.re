@@ -45,7 +45,6 @@ let setMinutes = e => {
 let networkBridge = (request, respond) => {
   switch (request.path) {
   | "/route_alerts" =>
-    Js.log(getExn(request.body)->Json.stringify);
     let _ =
       Fetch.fetchWithInit(
         "http://localhost:3000/route_alerts",
@@ -59,9 +58,9 @@ let networkBridge = (request, respond) => {
       )
       |> then_(Fetch.Response.json)
       |> then_(jsonString => jsonString->respond->resolve)
-      |> catch(_ =>
+      |> catch(_ => {
            errorResponseEncoder({message: "error"})->respond->resolve
-         );
+         });
     ();
   | _ => errorResponseEncoder({message: "bad route"})->respond
   };

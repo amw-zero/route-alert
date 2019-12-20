@@ -56,7 +56,6 @@ function setMinutes(e) {
 function networkBridge(request, respond) {
   var match = request.path;
   if (match === "/route_alerts") {
-    console.log(Json.stringify(Belt_Option.getExn(request.body)));
     fetch("http://localhost:3000/route_alerts", Fetch.RequestInit.make(/* Post */2, {
                       "Content-Type": "application/json"
                     }, Caml_option.some(Json.stringify(Belt_Option.getExn(request.body))), undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined)(/* () */0)).then((function (prim) {
