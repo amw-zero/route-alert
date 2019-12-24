@@ -49,7 +49,7 @@ let loadingIndicator = (dataLoadingState) => {
   };
 }
 
-let networkBridge = (request, respond) => {
+let networkBridge = (request: serverRequest, respond) => {
   switch (request.path) {
   | "/route_alerts" =>
     let _ =
@@ -73,12 +73,12 @@ let networkBridge = (request, respond) => {
   };
 };
 
-let appInterpreter: (effect(action), action => unit) => unit =
+let appInterpreter: (effect('d, action), action => unit) => unit =
   behaviorInterpreter(networkBridge);
 
 [@react.component]
 let make = () => {
-  let (state, dispatch) =
+  let (state, dispatch) = 
     ReactReffect.useReducer(initialState, reducer, appInterpreter);
 
   <>
