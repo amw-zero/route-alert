@@ -10,13 +10,35 @@ var Caml_format = require("bs-platform/lib/js/caml_format.js");
 var Caml_option = require("bs-platform/lib/js/caml_option.js");
 var RouteAlertBehavior = require("route-alert-behavior/src/RouteAlertBehavior.bs.js");
 
-function useReducer(initialState, reducer, interpreter) {
+function networkBridge(request, respond) {
+  var match = request.path;
+  if (match === "/route_alerts") {
+    fetch("http://localhost:3000/route_alerts", Fetch.RequestInit.make(/* Post */2, {
+                      "Content-Type": "application/json"
+                    }, Caml_option.some(Json.stringify(Belt_Option.getExn(request.body))), undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined)(/* () */0)).then((function (prim) {
+                return prim.json();
+              })).then((function (jsonString) {
+              return Promise.resolve(Curry._1(respond, jsonString));
+            })).catch((function (param) {
+            return Promise.resolve(Curry._1(respond, RouteAlertBehavior.errorResponseEncoder({
+                                message: "error"
+                              })));
+          }));
+    return /* () */0;
+  } else {
+    return Curry._1(respond, RouteAlertBehavior.errorResponseEncoder({
+                    message: "bad route"
+                  }));
+  }
+}
+
+function useReducer(initialState, reducer, environment) {
   var match = React.useState((function () {
           return initialState;
         }));
   var setState = match[1];
   var state = match[0];
-  var dispatch = RouteAlertBehavior.Reffect.makeDispatch(state, reducer, interpreter, (function (s) {
+  var dispatch = RouteAlertBehavior.Reffect.makeDispatch(state, reducer, environment, (function (s) {
           return Curry._1(setState, (function (param) {
                         return s;
                       }));
@@ -61,34 +83,10 @@ function loadingIndicator(dataLoadingState) {
   }
 }
 
-function networkBridge(request, respond) {
-  var match = request.path;
-  if (match === "/route_alerts") {
-    fetch("http://localhost:3000/route_alerts", Fetch.RequestInit.make(/* Post */2, {
-                      "Content-Type": "application/json"
-                    }, Caml_option.some(Json.stringify(Belt_Option.getExn(request.body))), undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined)(/* () */0)).then((function (prim) {
-                return prim.json();
-              })).then((function (jsonString) {
-              return Promise.resolve(Curry._1(respond, jsonString));
-            })).catch((function (param) {
-            return Promise.resolve(Curry._1(respond, RouteAlertBehavior.errorResponseEncoder({
-                                message: "error"
-                              })));
-          }));
-    return /* () */0;
-  } else {
-    return Curry._1(respond, RouteAlertBehavior.errorResponseEncoder({
-                    message: "bad route"
-                  }));
-  }
-}
-
-function appInterpreter(param, param$1) {
-  return RouteAlertBehavior.behaviorInterpreter(networkBridge, param, param$1);
-}
-
 function RouteAlert(Props) {
-  var match = useReducer(RouteAlertBehavior.initialState, RouteAlertBehavior.reducer, appInterpreter);
+  var match = useReducer(RouteAlertBehavior.initialState, RouteAlertBehavior.reducer, {
+        networkBridge: networkBridge
+      });
   var dispatch = match[1];
   var state = match[0];
   return React.createElement(React.Fragment, undefined, React.createElement("input", {
@@ -125,13 +123,12 @@ function RouteAlert(Props) {
 
 var make = RouteAlert;
 
+exports.networkBridge = networkBridge;
 exports.ReactReffect = ReactReffect;
 exports.dispatchEvent = dispatchEvent;
 exports.displayString = displayString;
 exports.displayInt = displayInt;
 exports.setMinutes = setMinutes;
 exports.loadingIndicator = loadingIndicator;
-exports.networkBridge = networkBridge;
-exports.appInterpreter = appInterpreter;
 exports.make = make;
 /* react Not a pure module */

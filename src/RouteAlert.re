@@ -4,17 +4,41 @@ open Js.Promise;
 
 [@bs.val] external setTimeout: (unit => unit, int) => float = "setTimeout";
 
+let networkBridge = (request: serverRequest, respond) => {
+  switch (request.path) {
+  | "/route_alerts" =>
+    let _ =
+      Fetch.fetchWithInit(
+        "http://localhost:3000/route_alerts",
+        Fetch.RequestInit.make(
+          ~method_=Post,
+          ~body=getExn(request.body)->Json.stringify->Fetch.BodyInit.make,
+          ~headers=
+            Fetch.HeadersInit.make({"Content-Type": "application/json"}),
+          (),
+        ),
+      )
+      |> then_(Fetch.Response.json)
+      |> then_(jsonString => jsonString->respond->resolve)
+      |> catch(_ => {
+           errorResponseEncoder({message: "error"})->respond->resolve
+         });
+    ();
+  | _ => errorResponseEncoder({message: "bad route"})->respond
+  };
+};
+
 module ReactReffect = {
   let useReducer =
       (
         initialState: 's,
-        reducer: Reffect.reducerFunc('s, 'a, 'e),
-        interpreter: ('e, Reffect.dispatchFunc('a)) => unit,
+        reducer: Reffect.reducerFunc('s, 'a),
+        environment: env,
       )
       : ('s, Reffect.dispatchFunc('a)) => {
     let (state, setState) = React.useState(() => initialState);
     let dispatch =
-      Reffect.makeDispatch(state, reducer, interpreter, s => setState(_ => s));
+      Reffect.makeDispatch(state, reducer, environment, s => setState(_ => s));
 
     (state, dispatch);
   };
@@ -47,39 +71,12 @@ let loadingIndicator = (dataLoadingState) => {
     | Loading => <p>{React.string("Loading")}</p>
     | _ => ReasonReact.null
   };
-}
-
-let networkBridge = (request: serverRequest, respond) => {
-  switch (request.path) {
-  | "/route_alerts" =>
-    let _ =
-      Fetch.fetchWithInit(
-        "http://localhost:3000/route_alerts",
-        Fetch.RequestInit.make(
-          ~method_=Post,
-          ~body=getExn(request.body)->Json.stringify->Fetch.BodyInit.make,
-          ~headers=
-            Fetch.HeadersInit.make({"Content-Type": "application/json"}),
-          (),
-        ),
-      )
-      |> then_(Fetch.Response.json)
-      |> then_(jsonString => jsonString->respond->resolve)
-      |> catch(_ => {
-           errorResponseEncoder({message: "error"})->respond->resolve
-         });
-    ();
-  | _ => errorResponseEncoder({message: "bad route"})->respond
-  };
 };
-
-let appInterpreter: (effect('d, action), action => unit) => unit =
-  behaviorInterpreter(networkBridge);
 
 [@react.component]
 let make = () => {
   let (state, dispatch) = 
-    ReactReffect.useReducer(initialState, reducer, appInterpreter);
+    ReactReffect.useReducer(initialState, reducer, { networkBridge: networkBridge });
 
   <>
     <input
